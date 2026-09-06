@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#6c5ce7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="La mia agenda">
+<title>La mia agenda 💜</title>
+<style>
+*{box-sizing:border-box}
+body{
+margin:0;
+font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+background:#f5f4fa;
+color:#222;
+}
+header{
+background:linear-gradient(135deg,#6c5ce7,#8e7cf0);
+color:white;
+padding:25px 20px 30px;
+border-radius:0 0 25px 25px;
+}
+header h1{
+margin:0 0 6px;
+font-size:27px;
+}
+header p{
+margin:0;
+opacity:.9;
+}
+main{
+padding:18px;
+max-width:700px;
+margin:auto;
+}
+.card{
+background:white;
+border-radius:18px;
+padding:18px;
+margin-bottom:15px;
+box-shadow:0 4px 15px rgba(0,0,0,.06);
+}
+.card h2{
+margin-top:0;
+font-size:20px;
+}
+button{
+border:0;
+border-radius:12px;
+padding:12px 15px;
+background:#6c5ce7;
+color:white;
+font-size:15px;
+cursor:pointer;
+}
+button.secondary{
+background:#eee;
+color:#333;
+}
+button.danger{
+background:#e74c3c;
+}
+input,select,textarea{
+width:100%;
+padding:12px;
+border:1px solid #ddd;
+border-radius:10px;
+margin:6px 0 12px;
+font-size:16px;
+background:white;
+}
+textarea{
+min-height:90px;
+resize:vertical;
+}
+label{
+font-size:14px;
+font-weight:600;
+}
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+.item{
+border:1px solid #eee;
+padding:13px;
+border-radius:13px;
+margin:8px 0;
+}
+.item strong{
+display:block;
+margin-bottom:4px;
+}
+.small{
+font-size:13px;
+color:#777;
+}
+.actions{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+margin-top:10px;
+}
+.nav{
+position:sticky;
+bottom:0;
+background:white;
+display:flex;
+justify-content:space-around;
+padding:10px 5px;
+border-top:1px solid #eee;
+z-index:10;
+}
+.nav button{
+background:transparent;
+color:#666;
+padding:8px;
+}
+.nav button.active{
+color:#6c5ce7;
+font-weight:bold;
+}
+.section{
+display:none;
+}
+.section.active{
+display:block;
+}
+@media(max-width:500px){
+.grid{
+grid-template-columns:1fr;
+}
+}
+</style>
+</head>
+<body>
+<header>
+<h1>La mia agenda 💜</h1>
+<p>Organizza la tua giornata, le scadenze e la tua macchina.</p>
+</header>
+<main>
+<section id="home" class="section active">
+<div class="card">
+<h2>👋 Ciao!</h2>
+<p id="today"></p>
+<p class="small">
+I dati vengono salvati automaticamente sul dispositivo.
+</p>
+</div>
+<div class="card">
+<h2>⚡ Accesso rapido</h2>
+<div class="actions">
+<button onclick="showSection('tasks')">➕ Attività</button>
+<button onclick="showSection('reminders')">🔔 Promemoria</button>
+<button onclick="showSection('car')">🚗 Macchina</button>
+</div>
+</div>
+<div class="card">
+<h2>📊 Situazione</h2>
+<p>Attività: <strong id="taskCount">0</strong></p>
+<p>Promemoria: <strong id="reminderCount">0</strong></p>
+<p>Spese macchina: <strong id="carTotal">€0,00</strong></p>
+</div>
+</section>
+<section id="tasks" class="section">
+<div class="card">
+<h2>✅ Attività</h2>
+<label>Attività</label>
+<input id="taskText" placeholder="Es. Studiare">
+<label>Scadenza</label>
+<input id="taskDate" type="datetime-local">
+<button onclick="addTask()">Aggiungi attività</button>
+<div id="taskList"></div>
+</div>
+</section>
+<section id="reminders" class="section">
+<div class="card">
+<h2>🔔 Promemoria</h2>
+<label>Titolo</label>
+<input id="reminderTitle" placeholder="Es. Appuntamento">
+<label>Data</label>
+<input id="reminderDate" type="datetime-local">
+<button onclick="addReminder()">Salva promemoria</button>
+<div id="reminderList"></div>
+</div>
+</section>
+<section id="car" class="section">
+<div class="card">
+<h2>🚗 La mia macchina</h2>
+<p class="small">
+Tieni sotto controllo manutenzione, spese e scadenze.
+</p>
+</div>
+<div class="card">
+<h2>🔧 Revisione</h2>
+<label>Data revisione</label>
+<input id="revisionDate" type="date">
+<label>Importo (€)</label>
+<input id="revisionCost" type="number" step="0.01">
+<button onclick="saveCarData()">Salva revisione</button>
+<div id="revisionInfo"></div>
+</div>
+<div class="card">
+<h2>⛽ Benzina</h2>
+<label>Data rifornimento</label>
+<input id="fuelDate" type="date">
+<div class="grid">
+<div>
+<label>Litri</label>
+<input id="fuelLiters" type="number" step="0.01">
+</div>
+<div>
+<label>Spesa (€)</label>
+<input id="fuelCost" type="number" step="0.01">
+</div>
+</div>
+<label>Note</label>
+<input id="fuelNote" placeholder="Es. distributore">
+<button onclick="addFuel()">Aggiungi rifornimento</button>
+<div id="fuelList"></div>
+</div>
+<div class="card">
+<h2>🛞 Gomme</h2>
+<label>Data</label>
+<input id="tiresDate" type="date">
+<label>Descrizione</label>
+<input id="tiresNote" placeholder="Es. Cambio gomme">
+<label>Spesa (€)</label>
+<input id="tiresCost" type="number" step="0.01">
+<button onclick="saveCarData()">Salva gomme</button>
+<div id="tiresInfo"></div>
+</div>
+<div class="card">
+<h2>💡 Luci</h2>
+<label>Data controllo/cambio</label>
+<input id="lightsDate" type="date">
+<label>Note</label>
+<input id="lightsNote" placeholder="Es. Lampadina anteriore">
+<label>Spesa (€)</label>
+<input id="lightsCost" type="number" step="0.01">
+<button onclick="saveCarData()">Salva luci</button>
+<div id="lightsInfo"></div>
+</div>
+<div class="card">
+<h2>🛠️ Tagliando</h2>
+<label>Data</label>
+<input id="serviceDate" type="date">
+<label>Chilometri</label>
+<input id="serviceKm" type="number">
+<label>Spesa (€)</label>
+<input id="serviceCost" type="number" step="0.01">
+<label>Note</label>
+<textarea id="serviceNote"></textarea>
+<button onclick="saveCarData()">Salva tagliando</button>
+<div id="serviceInfo"></div>
+</div>
+<div class="card">
+<h2>💰 Bollo</h2>
+<label>Scadenza</label>
+<input id="taxDate" type="date">
+<label>Importo (€)</label>
+<input id="taxCost" type="number" step="0.01">
+<button onclick="saveCarData()">Salva bollo</button>
+<div id="taxInfo"></div>
+<button class="secondary"
+onclick="addCalendar('Bollo auto',document.getElementById('taxDate').value)">
+📅 Google Calendar
+</button>
+</div>
+<div class="card">
+<h2>🛡️ Assicurazione</h2>
+<label>Scadenza</label>
+<input id="insuranceDate" type="date">
+<label>Importo (€)</label>
+<input id="insuranceCost" type="number" step="0.01">
+<label>Compagnia</label>
+<input id="insuranceCompany">
+<button onclick="saveCarData()">Salva assicurazione</button>
+<div id="insuranceInfo"></div>
+<button class="secondary"
+onclick="addCalendar('Scadenza assicurazione auto',document.getElementById('insuranceDate').value)">
+📅 Google Calendar
+</button>
+</div>
+</section>
+</main>
+<nav class="nav">
+<button onclick="showSection('home')" id="nav-home">
+🏠<br>Home
+</button>
+<button onclick="showSection('tasks')" id="nav-tasks">
+✅<br>Attività
+</button>
+<button onclick="showSection('reminders')" id="nav-reminders">
+🔔<br>Promemoria
+</button>
+<button onclick="showSection('car')" id="nav-car">
+🚗<br>Macchina
+</button>
+</nav>
+<script>
+let tasks=JSON.parse(localStorage.getItem("tasks")||"[]");
+let reminders=JSON.parse(localStorage.getItem("reminders")||"[]");
+let fuel=JSON.parse(localStorage.getItem("fuel")||"[]");
+let car=JSON.parse(localStorage.getItem("car")||"{}");
+function save(){
+localStorage.setItem("tasks",JSON.stringify(tasks));
+localStorage.setItem("reminders",JSON.stringify(reminders));
+localStorage.setItem("fuel",JSON.stringify(fuel));
+localStorage.setItem("car",JSON.stringify(car));
+}
+function showSection(id){
+document.querySelectorAll(".section")
+.forEach(s=>s.classList.remove("active"));
+document.getElementById(id).classList.add("active");
+document.querySelectorAll(".nav button")
+.forEach(b=>b.classList.remove("active"));
+let nav=document.getElementById("nav-"+id);
+if(nav)nav.classList.add("active");
+render();
+}
+function addTask(){
+let text=document.getElementById("taskText").value.trim();
+if(!text){
+alert("Inserisci un'attività.");
+return;
+}
+tasks.push({
+id:Date.now(),
+text:text,
+date:document.getElementById("taskDate").value,
+done:false
+});
+save();
+document.getElementById("taskText").value="";
+document.getElementById("taskDate").value="";
+render();
+}
+function deleteTask(id){
+tasks=tasks.filter(t=>t.id!==id);
+save();
+render();
+}
+function toggleTask(id){
+let task=tasks.find(t=>t.id===id);
+if(task)task.done=!task.done;
+save();
+render();
+}
+function addReminder(){
+let title=document.getElementById("reminderTitle").value.trim();
+if(!title){
+alert("Inserisci il titolo.");
+return;
+}
+reminders.push({
+id:Date.now(),
+title:title,
+date:document.getElementById("reminderDate").value
+});
+save();
+document.getElementById("reminderTitle").value="";
+document.getElementById("reminderDate").value="";
+render();
+}
+function deleteReminder(id){
+reminders=reminders.filter(r=>r.id!==id);
+save();
+render();
+}
+function addFuel(){
+let date=document.getElementById("fuelDate").value;
+let liters=parseFloat(document.getElementById("fuelLiters").value)||0;
+let cost=parseFloat(document.getElementById("fuelCost").value)||0;
+let note=document.getElementById("fuelNote").value;
+if(!date){
+alert("Inserisci la data.");
+return;
+}
+fuel.push({
+id:Date.now(),
+date:date,
+liters:liters,
+cost:cost,
+note:note
+});
+save();
+document.getElementById("fuelDate").value="";
+document.getElementById("fuelLiters").value="";
+document.getElementById("fuelCost").value="";
+document.getElementById("fuelNote").value="";
+render();
+}
+function deleteFuel(id){
+fuel=fuel.filter(f=>f.id!==id);
+save();
+render();
+}
+function saveCarData(){
+car={
+revisionDate:document.getElementById("revisionDate").value,
+revisionCost:document.getElementById("revisionCost").value,
+tiresDate:document.getElementById("tiresDate").value,
+tiresNote:document.getElementById("tiresNote").value,
+tiresCost:document.getElementById("tiresCost").value,
+lightsDate:document.getElementById("lightsDate").value,
+lightsNote:document.getElementById("lightsNote").value,
+lightsCost:document.getElementById("lightsCost").value,
+serviceDate:document.getElementById("serviceDate").value,
+serviceKm:document.getElementById("serviceKm").value,
+serviceCost:document.getElementById("serviceCost").value,
+serviceNote:document.getElementById("serviceNote").value,
+taxDate:document.getElementById("taxDate").value,
+taxCost:document.getElementById("taxCost").value,
+insuranceDate:document.getElementById("insuranceDate").value,
+insuranceCost:document.getElementById("insuranceCost").value,
+insuranceCompany:document.getElementById("insuranceCompany").value
+};
+save();
+render();
+alert("Dati salvati! 🚗💜");
+}
+function addCalendar(title,date){
+if(!date){
+alert("Inserisci prima una data.");
+return;
+}
+let start=date.replaceAll("-","")+"T090000";
+let end=date.replaceAll("-","")+"T100000";
+let url=
+"https://calendar.google.com/calendar/render?action=TEMPLATE"+
+"&text="+encodeURIComponent(title)+
+"&dates="+start+"/"+end;
+window.open(url,"_blank");
+}
+function render(){
+document.getElementById("today").textContent=
+new Date().toLocaleDateString("it-IT",{
+weekday:"long",
+day:"numeric",
+month:"long",
+year:"numeric"
+});
+document.getElementById("taskCount").textContent=tasks.length;
+document.getElementById("reminderCount").textContent=reminders.length;
+let totalFuel=fuel.reduce(
+(sum,f)=>sum+(Number(f.cost)||0),0
+);
+let otherCosts=
+(Number(car.revisionCost)||0)+
+(Number(car.tiresCost)||0)+
+(Number(car.lightsCost)||0)+
+(Number(car.serviceCost)||0)+
+(Number(car.taxCost)||0)+
+(Number(car.insuranceCost)||0);
+document.getElementById("carTotal").textContent=
+"€"+(totalFuel+otherCosts).toFixed(2);
+document.getElementById("taskList").innerHTML=
+tasks.length
+?
+tasks.map(t=>`
+<div class="item">
+<strong>
+${escapeHtml(t.text)}
+</strong>
+<span class="small">
+${t.date
+?new Date(t.date).toLocaleString("it-IT")
+:"Nessuna scadenza"}
+</span>
+<div class="actions">
+<button onclick="toggleTask(${t.id})">
+${t.done?"↩️ Riapri":"☑️ Completa"}
+</button>
+<button class="danger"
+onclick="deleteTask(${t.id})">
+🗑️
+</button>
+</div>
+</div>
+`).join("")
+:
+"<p class='small'>Nessuna attività.</p>";
+document.getElementById("reminderList").innerHTML=
+reminders.length
+?
+reminders.map(r=>`
+<div class="item">
+<strong>
+${escapeHtml(r.title)}
+</strong>
+<span class="small">
+${r.date
+?new Date(r.date).toLocaleString("it-IT")
+:"Nessuna data"}
+</span>
+<div class="actions">
+<button class="secondary"
+onclick="addCalendar('${escapeJs(r.title)}','${r.date}')">
+📅 Calendar
+</button>
+<button class="danger"
+onclick="deleteReminder(${r.id})">
+🗑️
+</button>
+</div>
+</div>
+`).join("")
+:
+"<p class='small'>Nessun promemoria.</p>";
+document.getElementById("fuelList").innerHTML=
+fuel.length
+?
+fuel.slice().reverse().map(f=>`
+<div class="item">
+<strong>
+⛽ ${f.date}
+</strong>
+<span class="small">
+${f.liters} L · €${Number(f.cost).toFixed(2)}
+${f.note?" · "+escapeHtml(f.note):""}
+</span>
+<div class="actions">
+<button class="danger"
+onclick="deleteFuel(${f.id})">
+🗑️
+</button>
+</div>
+</div>
+`).join("")
+:
+"<p class='small'>Nessun rifornimento registrato.</p>";
+renderCar(
+"revisionInfo",
+car.revisionDate,
+car.revisionCost,
+"Revisione"
+);
+renderCar(
+"tiresInfo",
+car.tiresDate,
+car.tiresCost,
+car.tiresNote
+);
+renderCar(
+"lightsInfo",
+car.lightsDate,
+car.lightsCost,
+car.lightsNote
+);
+document.getElementById("serviceInfo").innerHTML=
+car.serviceDate
+?
+`<div class="item">
+<strong>Ultimo tagliando</strong>
+<span class="small">
+${car.serviceDate}
+${car.serviceKm?" · "+car.serviceKm+" km":""}
+${car.serviceCost
+?" · €"+Number(car.serviceCost).toFixed(2):""}
+</span>
+${car.serviceNote
+?"<p>"+escapeHtml(car.serviceNote)+"</p>":""}
+</div>`
+:
+"<p class='small'>Nessun tagliando registrato.</p>";
+renderCar(
+"taxInfo",
+car.taxDate,
+car.taxCost,
+"Bollo"
+);
+document.getElementById("insuranceInfo").innerHTML=
+car.insuranceDate
+?
+`<div class="item">
+<strong>Assicurazione</strong>
+<span class="small">
+${car.insuranceDate}
+${car.insuranceCost
+?" · €"+Number(car.insuranceCost).toFixed(2):""}
+${car.insuranceCompany
+?" · "+escapeHtml(car.insuranceCompany):""}
+</span>
+</div>`
+:
+"<p class='small'>Nessuna assicurazione registrata.</p>";
+fillCarInputs();
+}
+function renderCar(id,date,cost,note){
+document.getElementById(id).innerHTML=
+date
+?
+`<div class="item">
+<strong>${escapeHtml(note||"")}</strong>
+<span class="small">
+${date}
+${cost
+?" · €"+Number(cost).toFixed(2):""}
+</span>
+</div>`
+:
+"<p class='small'>Nessun dato registrato.</p>";
+}
+function fillCarInputs(){
+let fields=[
+"revisionDate",
+"revisionCost",
+"tiresDate",
+"tiresNote",
+"tiresCost",
+"lightsDate",
+"lightsNote",
+"lightsCost",
+"serviceDate",
+"serviceKm",
+"serviceCost",
+"serviceNote",
+"taxDate",
+"taxCost",
+"insuranceDate",
+"insuranceCost",
+"insuranceCompany"
+];
+fields.forEach(id=>{
+let el=document.getElementById(id);
+if(el&&car[id]!==undefined){
+el.value=car[id];
+}
+});
+}
+function escapeHtml(text){
+return String(text)
+.replaceAll("&","&amp;")
+.replaceAll("<","&lt;")
+.replaceAll(">","&gt;")
+.replaceAll('"',"&quot;")
+.replaceAll("'","&#039;");
+}
+function escapeJs(text){
+return String(text).replaceAll("'","\\'");
+}
+render();
+</script>
+</body>
+</html>
