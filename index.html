@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
-<head>
+<head<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#7c3aed">
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#6c5ce7">
@@ -136,7 +137,15 @@ grid-template-columns:1fr;
 }
 </style>
 </head>
-<body>
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js")
+      .then(() => console.log("Service Worker attivo"))
+      .catch(err => console.error("Errore Service Worker:", err));
+  });
+}
+</script>
 <header>
 <h1>La mia agenda 💜</h1>
 <p>Organizza la tua giornata, le scadenze e la tua macchina.</p>
